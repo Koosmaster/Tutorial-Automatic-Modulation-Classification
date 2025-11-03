@@ -124,22 +124,25 @@ def animate_bpsk_decision(
 
 
 
-      # percentile zoom + bigger markers
-    ms, al = 32, 0.95
+    #Plot
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.set_aspect("equal")
+    
+    ms, al = 32, 0.95  # marker size and transparency
     p = np.percentile(np.c_[I, Q], [1, 99], axis=0)
     padx = 0.1 * (p[1,0] - p[0,0] + 1e-9)
     pady = 0.1 * (p[1,1] - p[0,1] + 1e-9)
     ax.set_xlim(p[0,0]-padx, p[1,0]+padx)
     ax.set_ylim(p[0,1]-pady, p[1,1]+pady)
     
+    ax.set_title(f"{mod} @ {snr} dB — Constellation Animation" if snr != "" else f"{mod} — Constellation Animation")
+    ax.set_xlabel("I")
+    ax.set_ylabel("Q")
+    ax.grid(True, linestyle="--", alpha=0.6)
+    ax.axvline(threshold, linestyle="--", linewidth=1)
+    
     scat0 = ax.scatter([], [], s=ms, alpha=al)
     scat1 = ax.scatter([], [], s=ms, alpha=al)
-
-
-    scat0 = ax.scatter([], [], s=22, alpha=0.85)
-    scat1 = ax.scatter([], [], s=22, alpha=0.85)
-    txt = ax.text(0.02, 0.02, "", transform=ax.transAxes,
-                  ha="left", va="bottom", bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.8))
 
     def init():
         scat0.set_offsets(np.empty((0, 2)))
