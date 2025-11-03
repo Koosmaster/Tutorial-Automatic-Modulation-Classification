@@ -1,5 +1,6 @@
 ## Functions for Exporing the date
 import matplotlib.pyplot as plt
+import numpy as np
 def visualize_modulations(data, mods=None, snr=18, num_samples=128): # Reduced num_samples to match RML2016.10A
     """
     Visualize one example of multiple modulation types at a fixed SNR.
