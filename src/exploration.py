@@ -78,9 +78,11 @@ def visualize_modulations(
 def animate_bpsk_decision(
     signal: np.ndarray,
     key: Optional[Tuple[str, int]] = None,
-    interval: int = 80,
+    interval: int = 100,
     threshold: float = 0.0,
     max_bits_show: int = 32,
+    gain: float = 3.0,
+    sps: int = 8,
 ):
     """
     Animate constellation with a vertical decision boundary at I=threshold.
@@ -115,9 +117,9 @@ def animate_bpsk_decision(
     Q = gain * Q / rms
     
     # 3) Symbol decimation (if oversampled)
-    sps = 8      # try 4 or 8
-    I = I[::sps]
-    Q = Q[::sps]
+    if isinstance(sps, int) and sps >1:
+        I = I[::sps]
+        Q = Q[::sps]
     
     # Decisions after processing
     bits = (I >= 0.0).astype(int)
