@@ -61,22 +61,3 @@ def load_radioml_pkl_dataset(filepath, filter_analog=False):
 
     return radioml_dict, unique_mods, unique_snrs
 
-def to_xy(d):
-    """Convert RadioML dict to X, mods, snrs arrays."""
-    X, mods, snrs = [], [], []
-    for (mod, snr), arr in d.items():
-        X.append(arr)
-        mods += [mod]*len(arr)
-        snrs += [snr]*len(arr)
-    X = np.vstack(X).astype(np.float32)
-    return X, np.array(mods), np.array(snrs)
-
-def encode_labels(mods):
-    """Encode modulation labels into integers."""
-    enc = LabelEncoder()
-    y = enc.fit_transform(mods)
-    return y, list(enc.classes_), enc
-
-def stratified_split(X, y, test_size=0.3, seed=42):
-    """Stratified train/validation split."""
-    return train_test_split(X, y, test_size=test_size, random_state=seed, stratify=y)
