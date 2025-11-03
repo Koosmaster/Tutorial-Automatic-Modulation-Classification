@@ -124,11 +124,11 @@ def animate_bpsk_decision(
 
 
 
-    #Plot
+    # plot
     fig, ax = plt.subplots(figsize=(6, 6))
     ax.set_aspect("equal")
     
-    ms, al = 32, 0.95  # marker size and transparency
+    ms, al = 32, 0.95
     p = np.percentile(np.c_[I, Q], [1, 99], axis=0)
     padx = 0.1 * (p[1,0] - p[0,0] + 1e-9)
     pady = 0.1 * (p[1,1] - p[0,1] + 1e-9)
@@ -143,6 +143,11 @@ def animate_bpsk_decision(
     
     scat0 = ax.scatter([], [], s=ms, alpha=al)
     scat1 = ax.scatter([], [], s=ms, alpha=al)
+    txt   = ax.text(
+        0.02, 0.02, "",
+        transform=ax.transAxes, ha="left", va="bottom",
+        bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.8)
+    )
 
     def init():
         scat0.set_offsets(np.empty((0, 2)))
