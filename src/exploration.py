@@ -97,8 +97,21 @@ def animate_bpsk_decision(
     else:
         print(f"Unexpected signal shape for {mod}@{snr}.")
         return None
-
+    
+    # AGC (normalize amplitude)
+    rms = np.sqrt(np.mean(I**2 + Q**2) + 1e-12)
+    gain = 3.0  # adjust 2–5 for stronger contrast
+    I = gain * I / rms
+    Q = gain * Q / rms
+    
+    # optional symbol decimation (if oversampled)
+    sps = 8  # samples per symbol, try 4–8
+    I = I[::sps]
+    Q = Q[::sps]
+    
+    # recompute bits after processing
     bits = (I >= threshold).astype(int)
+
 
     fig, ax = plt.subplots(figsize=(6, 6))
     ax.set_aspect("equal")
