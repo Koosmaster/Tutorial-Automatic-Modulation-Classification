@@ -108,9 +108,32 @@ def animate_bpsk_decision(
     sps = 8  # samples per symbol, try 4–8
     I = I[::sps]
     Q = Q[::sps]
+       
+    # 1) Auto phase alignment (rotate so the mean symbol sits on the I axis)
+    z   = I + 1j*Q
+    phi = np.angle(np.mean(z))
+    z   = z * np.exp(-1j * phi)
+    I, Q = z.real, z.imag
     
-    # recompute bits after processing
-    bits = (I >= threshold).astype(int)
+    # Optional: flip so the dominant cluster is at +I
+    if np.mean(I) < 0:
+        I = -I
+        Q = -Q
+    
+    # 2) Light AGC for visual contrast (scale to unit RMS, then boost)
+    rms = (np.mean(I**2 + Q**2) + 1e-12) ** 0.5
+    gain = 3.0            # try 2–5 to taste
+    I = gain * I / rms
+    Q = gain * Q / rms
+    
+    # 3) Symbol decimation (if oversampled; try 4 or 8)
+    sps = 8               # samples per symbol (guess); tweak if needed
+    I = I[::sps]
+    Q = Q[::sps]
+    
+    # recompute decisions after processing
+    bits = (I >= 0.0).astype(int)
+
 
 
     fig, ax = plt.subplots(figsize=(6, 6))
