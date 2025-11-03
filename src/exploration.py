@@ -98,55 +98,43 @@ def animate_bpsk_decision(
         print(f"Unexpected signal shape for {mod}@{snr}.")
         return None
     
-    # AGC (normalize amplitude)
-    rms = np.sqrt(np.mean(I**2 + Q**2) + 1e-12)
-    gain = 3.0  # adjust 2–5 for stronger contrast
-    I = gain * I / rms
-    Q = gain * Q / rms
+    # --- make BPSK clusters pop (single, ordered pass) ---
     
-    # optional symbol decimation (if oversampled)
-    sps = 8  # samples per symbol, try 4–8
-    I = I[::sps]
-    Q = Q[::sps]
-       
-    # 1) Auto phase alignment (rotate so the mean symbol sits on the I axis)
-    z   = I + 1j*Q
+    # 1) Auto phase alignment: rotate so mean symbol lies on +I axis
+    z   = (I + 1j*Q)
     phi = np.angle(np.mean(z))
     z   = z * np.exp(-1j * phi)
     I, Q = z.real, z.imag
+    if np.mean(I) < 0:  # put dominant cluster at +I
+        I = -I; Q = -Q
     
-    # Optional: flip so the dominant cluster is at +I
-    if np.mean(I) < 0:
-        I = -I
-        Q = -Q
-    
-    # 2) Light AGC for visual contrast (scale to unit RMS, then boost)
-    rms = (np.mean(I**2 + Q**2) + 1e-12) ** 0.5
-    gain = 3.0            # try 2–5 to taste
+    # 2) AGC (visual): scale to unit RMS, boost a bit
+    rms  = (np.mean(I**2 + Q**2) + 1e-12) ** 0.5
+    gain = 3.0  # try 2–5
     I = gain * I / rms
     Q = gain * Q / rms
     
-    # 3) Symbol decimation (if oversampled; try 4 or 8)
-    sps = 8               # samples per symbol (guess); tweak if needed
+    # 3) Symbol decimation (if oversampled)
+    sps = 8      # try 4 or 8
     I = I[::sps]
     Q = Q[::sps]
     
-    # recompute decisions after processing
+    # Decisions after processing
     bits = (I >= 0.0).astype(int)
 
 
 
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.set_aspect("equal")
-    pad = 0.5
-    ax.set_xlim(I.min() - pad, I.max() + pad)
-    ax.set_ylim(Q.min() - pad, Q.max() + pad)
-    title = f"{mod} @ {snr} dB — Constellation Animation" if snr != "" else f"{mod} — Constellation Animation"
-    ax.set_title(title)
-    ax.set_xlabel("I")
-    ax.set_ylabel("Q")
-    ax.grid(True, linestyle="--", alpha=0.6)
-    ax.axvline(threshold, linestyle="--", linewidth=1)
+      # percentile zoom + bigger markers
+    ms, al = 32, 0.95
+    p = np.percentile(np.c_[I, Q], [1, 99], axis=0)
+    padx = 0.1 * (p[1,0] - p[0,0] + 1e-9)
+    pady = 0.1 * (p[1,1] - p[0,1] + 1e-9)
+    ax.set_xlim(p[0,0]-padx, p[1,0]+padx)
+    ax.set_ylim(p[0,1]-pady, p[1,1]+pady)
+    
+    scat0 = ax.scatter([], [], s=ms, alpha=al)
+    scat1 = ax.scatter([], [], s=ms, alpha=al)
+
 
     scat0 = ax.scatter([], [], s=22, alpha=0.85)
     scat1 = ax.scatter([], [], s=22, alpha=0.85)
