@@ -3,6 +3,7 @@ import importlib
 import sys
 import platform
 import pickle
+import numpy as np
 def load_radioml_pkl_dataset(filepath, filter_analog=False):
     """
     Load the RadioML 2016.10A dataset from a pickle file.
