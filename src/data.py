@@ -1,7 +1,15 @@
-## File is called in the Notebooks, this handles loading the dataset and preprocessing splits (2 helper funcitons)
+"""
+data.py — Helper functions for loading the RadioML dataset and managing
+train/val/test splits.
+
+Used across all project notebooks.
+"""
+import os
 import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
+
+# Load RadioML 2016.10A Dataset
 def load_radioml_pkl_dataset(filepath, filter_analog=False):
     """
     Load the RadioML 2016.10A dataset from a pickle file.
@@ -62,7 +70,8 @@ def load_radioml_pkl_dataset(filepath, filter_analog=False):
     print(f"Dataset summary: {len(unique_mods)} mods, {len(unique_snrs)} SNRs, {total_samples:,} total samples.")
 
     return radioml_dict, unique_mods, unique_snrs
-
+    
+# Train/Val/Test Splitting Helper
 def splits(
     pkl_path,
     split_dir,
