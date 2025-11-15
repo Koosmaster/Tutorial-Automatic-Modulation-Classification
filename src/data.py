@@ -1,6 +1,7 @@
-## File is called in the Notebooks, this handles loading the dataset and preprocessing
+## File is called in the Notebooks, this handles loading the dataset and preprocessing splits (2 helper funcitons)
 import pickle
 import numpy as np
+from sklearn.model_selection import train_test_split
 def load_radioml_pkl_dataset(filepath, filter_analog=False):
     """
     Load the RadioML 2016.10A dataset from a pickle file.
@@ -61,4 +62,114 @@ def load_radioml_pkl_dataset(filepath, filter_analog=False):
     print(f"Dataset summary: {len(unique_mods)} mods, {len(unique_snrs)} SNRs, {total_samples:,} total samples.")
 
     return radioml_dict, unique_mods, unique_snrs
+
+def splits(
+    pkl_path,
+    split_dir,
+    seed=42,
+    train_frac=0.70,
+    val_frac=0.15,
+    test_frac=0.15,
+    force_recompute=False,
+):
+    """
+    Load train/val/test splits if they already exist.
+    If they do not exist OR force_recompute=True, regenerate the splits,
+    save them to disk, and return the numpy arrays.
+
+    pkl_path:     Path to RadioML2016.10A .pkl dataset
+    split_dir:    Directory where npy split files will be stored
+    """
+
+    os.makedirs(split_dir, exist_ok=True)
+
+    # Expected files if splits already exist
+    files = [
+        "X_train.npy", "y_train.npy", "snr_train.npy",
+        "X_val.npy",   "y_val.npy",   "snr_val.npy",
+        "X_test.npy",  "y_test.npy",  "snr_test.npy",
+    ]
+
+    paths = [os.path.join(split_dir, f) for f in files]
+
+    # ----------------------------------------------------------------------
+    # 1) If split files exist, load and return them
+    # ----------------------------------------------------------------------
+    if all(os.path.exists(p) for p in paths) and not force_recompute:
+        print("[INFO] Using existing splits from:", split_dir)
+
+        X_train = np.load(paths[0]); y_train = np.load(paths[1]); snr_train = np.load(paths[2])
+        X_val   = np.load(paths[3]); y_val   = np.load(paths[4]); snr_val   = np.load(paths[5])
+        X_test  = np.load(paths[6]); y_test  = np.load(paths[7]); snr_test  = np.load(paths[8])
+
+        return (
+            X_train, y_train, snr_train,
+            X_val,   y_val,   snr_val,
+            X_test,  y_test,  snr_test
+        )
+
+    # ----------------------------------------------------------------------
+    # 2) Otherwise load raw dataset and create splits
+    # ----------------------------------------------------------------------
+    print("[INFO] No splits found. Creating train/val/test now...")
+
+    data_dict, mod_classes, snr_values = load_radioml_pkl_dataset(pkl_path)
+
+    X_list, y_list, snr_list = [], [], []
+
+    # Convert all complex samples into (2, N) IQ matrices
+    for (mod, snr), signals in data_dict.items():
+        for complex_signal in signals:
+            iq = np.vstack((complex_signal.real, complex_signal.imag))
+            X_list.append(iq)
+            y_list.append(mod)
+            snr_list.append(snr)
+
+    X = np.array(X_list)
+    y = np.array(y_list)
+    snr_list = np.array(snr_list)
+
+    # ----------------------------------------------------------------------
+    # 3) Perform 70/15/15 split
+    # ----------------------------------------------------------------------
+    # First split: Train (70%) and Temp (30%)
+    X_train, X_temp, y_train, y_temp, snr_train, snr_temp = train_test_split(
+        X, y, snr_list,
+        test_size=(1 - train_frac),
+        random_state=seed,
+        stratify=y
+    )
+
+    # Second split: Temp -> Val (15%) + Test (15%)
+    relative_test = test_frac / (val_frac + test_frac)  # 0.15 / 0.30 = 0.5
+
+    X_val, X_test, y_val, y_test, snr_val, snr_test = train_test_split(
+        X_temp, y_temp, snr_temp,
+        test_size=relative_test,
+        random_state=seed,
+        stratify=y_temp
+    )
+
+    # ----------------------------------------------------------------------
+    # 4) Save splits
+    # ----------------------------------------------------------------------
+    print("[INFO] Saving new splits to:", split_dir)
+
+    np.save(os.path.join(split_dir, "X_train.npy"), X_train)
+    np.save(os.path.join(split_dir, "y_train.npy"), y_train)
+    np.save(os.path.join(split_dir, "snr_train.npy"), snr_train)
+
+    np.save(os.path.join(split_dir, "X_val.npy"), X_val)
+    np.save(os.path.join(split_dir, "y_val.npy"), y_val)
+    np.save(os.path.join(split_dir, "snr_val.npy"), snr_val)
+
+    np.save(os.path.join(split_dir, "X_test.npy"), X_test)
+    np.save(os.path.join(split_dir, "y_test.npy"), y_test)
+    np.save(os.path.join(split_dir, "snr_test.npy"), snr_test)
+
+    return (
+        X_train, y_train, snr_train,
+        X_val,   y_val,   snr_val,
+        X_test,  y_test,  snr_test
+    )
 
