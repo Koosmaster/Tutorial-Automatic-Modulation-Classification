@@ -1,4 +1,4 @@
-## handles the model training and predicition
+## handles the model training and prediction
 import torch, torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 from tqdm import tqdm
