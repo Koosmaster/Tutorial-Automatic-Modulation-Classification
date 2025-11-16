@@ -87,9 +87,18 @@ def animate_bpsk_decision(
     """
     Animate constellation with a vertical decision boundary at I=threshold.
     Returns the matplotlib.animation.FuncAnimation object.
+    `gain` controls the AGC scaling applied to the constellation and must be
+    a positive value.
     """
     mod, snr = (key if key is not None else ("BPSK", ""))
     mod = _normalize_label(mod)
+
+    try:
+        gain = float(gain)
+    except (TypeError, ValueError):
+        raise ValueError("gain must be a positive float.") from None
+    if gain <= 0:
+        raise ValueError("gain must be positive.")
 
     # Accept complex (N,), or (2,N) as [I;Q]
     if signal.ndim == 1 and np.iscomplexobj(signal):
@@ -112,7 +121,6 @@ def animate_bpsk_decision(
     
     # 2) AGC (visual): scale to unit RMS, boost a bit
     rms  = (np.mean(I**2 + Q**2) + 1e-12) ** 0.5
-    gain = 3.0  # try 2–5
     I = gain * I / rms
     Q = gain * Q / rms
     
