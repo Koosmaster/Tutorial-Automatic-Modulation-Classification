@@ -161,4 +161,126 @@ def radioml_splits(
         "mod_classes": np.array(mod_classes),
         "snr_values": np.array(snr_values),
     }
+def radioml_splits_downsampled(
+    data_path,
+    seed=42,
+    test_size=0.3,
+    val_size=0.5,
+    flatten=True,
+    downsample_fraction=0.2,
+    max_samples=None,
+):
+    """
+    Load RadioML data, optionally downsample the entire dataset to a smaller size
+    (while preserving class ratios), then create train/val/test splits.
+
+    Args:
+        data_path: path to the .pkl dataset
+        seed: random_state for reproducibility
+        test_size: fraction of data to hold out for test+val
+        val_size: fraction of (temp) data to use as val (e.g., 0.5 -> 50/50 val/test)
+        flatten: if True, returns X_* as 2D (samples, features) for classical ML
+        downsample_fraction: fraction of the full dataset to keep (e.g., 0.2 -> 20%)
+        max_samples: if not None, cap the total number of samples to this value.
+                     (Applied after downsample_fraction calculation.)
+
+    Returns:
+        A dict with:
+            X_train, X_val, X_test
+            y_train, y_val, y_test
+            snr_train, snr_val, snr_test
+            mod_classes, snr_values
+    """
+    # --- Load full dataset (same as radioml_splits) ---
+    radioml_data, mod_classes, snr_values = load_radioml_pkl_dataset(data_path)
+
+    X = []
+    y = []
+    snr_list = []
+
+    # radioml_data is keyed by (mod, snr)
+    for (mod, snr), signals in radioml_data.items():
+        mod_idx = mod_classes.index(mod)
+
+        for complex_signal in signals:
+            iq_matrix = np.vstack((complex_signal.real, complex_signal.imag))  # shape (2, N)
+            X.append(iq_matrix)
+            y.append(mod_idx)
+            snr_list.append(snr)
+
+    X = np.array(X)        # (num_samples, 2, N)
+    y = np.array(y)
+    snr_list = np.array(snr_list)
+
+    print(f"[Downsample] Original dataset size: {X.shape[0]:,} samples")
+
+    # --- Downsample the entire dataset before splitting ---
+    # Compute desired number of samples based on fraction
+    N = X.shape[0]
+    if downsample_fraction is not None:
+        n_keep = int(N * downsample_fraction)
+    else:
+        n_keep = N
+
+    # If max_samples is set, enforce that cap
+    if max_samples is not None:
+        n_keep = min(n_keep, max_samples)
+
+    # Only downsample if we are actually reducing the dataset
+    if n_keep < N:
+        print(f"[Downsample] Keeping {n_keep:,} samples (~{n_keep / N:.1%} of original)")
+
+        sss = StratifiedShuffleSplit(
+            n_splits=1,
+            train_size=n_keep,
+            random_state=seed
+        )
+
+        subset_idx, _ = next(sss.split(X, y))
+        X = X[subset_idx]
+        y = y[subset_idx]
+        snr_list = snr_list[subset_idx]
+    else:
+        print("[Downsample] downsample_fraction and/or max_samples do not reduce the dataset; using full data.")
+
+    # --- Now do the standard train/val/test splits (same as radioml_splits) ---
+
+    # First split: train vs (val+test)
+    X_train, X_temp, y_train, y_temp, snr_train, snr_temp = train_test_split(
+        X, y, snr_list,
+        test_size=test_size,
+        random_state=seed,
+        stratify=y,
+    )
+
+    # Second split: val vs test from temp set
+    X_val, X_test, y_val, y_test, snr_val, snr_test = train_test_split(
+        X_temp, y_temp, snr_temp,
+        test_size=val_size,
+        random_state=seed,
+        stratify=y_temp,
+    )
+
+    if flatten:
+        n_train = X_train.shape[0]
+        n_val   = X_val.shape[0]
+        n_test  = X_test.shape[0]
+
+        X_train = X_train.reshape(n_train, -1)
+        X_val   = X_val.reshape(n_val, -1)
+        X_test  = X_test.reshape(n_test, -1)
+
+    return {
+        "X_train": X_train,
+        "X_val": X_val,
+        "X_test": X_test,
+        "y_train": y_train,
+        "y_val": y_val,
+        "y_test": y_test,
+        "snr_train": snr_train,
+        "snr_val": snr_val,
+        "snr_test": snr_test,
+        "mod_classes": np.array(mod_classes),
+        "snr_values": np.array(snr_values),
+    }
 
