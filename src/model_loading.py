@@ -1,34 +1,22 @@
-import os
-import zipfile
-import torch
+# src/model_loading.py
+import os, zipfile, torch
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+BASE_DIR   = os.path.dirname(__file__)           # .../src
+MODELS_DIR = os.path.join(BASE_DIR, "models")    # .../src/models
+ZIP_PATH   = os.path.join(MODELS_DIR, "models1d_ablation_models.zip")
 
-def _get_repo_root():
-    # <repo_root>/src/model_loading.py → go up 1 level
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+def _ensure_unzipped():
+    if os.path.exists(ZIP_PATH) and not any(f.endswith(".pth") for f in os.listdir(MODELS_DIR)):
+        with zipfile.ZipFile(ZIP_PATH, "r") as zf:
+            zf.extractall(MODELS_DIR)
 
-
-def _ensure_models_unzipped():
-    repo_root = _get_repo_root()
-    models_dir = os.path.join(repo_root, "models")
-    zip_path = os.path.join(models_dir, "models1d_ablation_models.zip")
-
-    # Extract if no .pth files yet
-    if os.path.exists(zip_path):
-        if not any(f.endswith(".pth") for f in os.listdir(models_dir)):
-            with zipfile.ZipFile(zip_path, "r") as zf:
-                zf.extractall(models_dir)
-                print("Extracted:", zf.namelist())
-    return models_dir
-
-
-def load_ablation_model(config_name, model_cls, best=False, num_classes=11):
-    models_dir = _ensure_models_unzipped()
+def load_ablation_model(config_name, model_cls, best: bool = False, num_classes: int = 11):
+    _ensure_unzipped()
 
     fname = f"best_{config_name}.pth" if best else f"{config_name}.pth"
-    ckpt_path = os.path.join(models_dir, fname)
+    ckpt_path = os.path.join(MODELS_DIR, fname)
 
     if not os.path.exists(ckpt_path):
         raise FileNotFoundError(f"Checkpoint not found: {ckpt_path}")
@@ -37,5 +25,4 @@ def load_ablation_model(config_name, model_cls, best=False, num_classes=11):
     state = torch.load(ckpt_path, map_location=device)
     model.load_state_dict(state)
     model.eval()
-
     return model
