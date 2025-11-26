@@ -26,3 +26,23 @@ def load_ablation_model(config_name, model_cls, best: bool = False, num_classes:
     model.load_state_dict(state)
     model.eval()
     return model
+    
+# =========================================================
+# LOAD TRANSFORMER MODEL
+# =========================================================
+
+def load_transformer_model(model_cls, fname="transformer_raw_iq.pth", num_classes=11):
+    """
+    Load a saved Raw I/Q Transformer model.
+    """
+    _ensure_unzipped()  # safe to call even if no zip is used
+
+    ckpt_path = os.path.join(MODELS_DIR, fname)
+    if not os.path.exists(ckpt_path):
+        raise FileNotFoundError(f"Transformer checkpoint not found: {ckpt_path}")
+
+    model = model_cls(num_classes=num_classes).to(device)
+    state = torch.load(ckpt_path, map_location=device)
+    model.load_state_dict(state)
+    model.eval()
+    return model
