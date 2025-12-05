@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 
-
+TRADITIONAL_DIR = REPO_DIR / "data" / "traditional_models"
 def dict_to_iq_arrays(
     radioml_data: Dict[Tuple[str, int], np.ndarray]
 ):
