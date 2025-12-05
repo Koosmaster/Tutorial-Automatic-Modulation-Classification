@@ -56,3 +56,15 @@ def make_tensor_loader(
     ds = TensorDataset(X_t, y_t)
     loader = DataLoader(ds, batch_size=batch_size, shuffle=shuffle)
     return loader
+    
+def load_model_metrics(model_name: str):
+    """Load metrics.json for a given model (knn, svm, rf)."""
+    model_dir = TRADITIONAL_DIR / model_name
+    metrics_path = model_dir / "metrics.json"
+    with open(metrics_path, "r") as f:
+        return json.load(f)
+
+def show_confusion(model_name: str):
+    """Display confusion.png for a given model."""
+    img_path = TRADITIONAL_DIR / model_name / "confusion.png"
+    display(Image(filename=str(img_path)))
