@@ -4,7 +4,10 @@ from typing import Dict, Tuple, List
 import numpy as np
 import torch
 from torch.utils.data import TensorDataset, DataLoader
-
+import os, sys
+from pathlib import Path
+REPO_URL = "https://github.com/Koosmaster/Tutorial-Automatic-Modulation-Classification.git"
+REPO_DIR = Path("/content/Tutorial-Automatic-Modulation-Classification")
 TRADITIONAL_DIR = REPO_DIR / "data" / "traditional_models"
 def dict_to_iq_arrays(
     radioml_data: Dict[Tuple[str, int], np.ndarray]
