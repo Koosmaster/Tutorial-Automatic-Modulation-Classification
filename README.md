@@ -1,5 +1,5 @@
 # Tutorial–Automatic–Modulation–Classification
-<p align="center">
+<p align="left">
   <img src="images/snr_curves_2016.png" alt="Accuracy vs SNR for all models" width="700">
 </p>
 
