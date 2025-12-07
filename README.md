@@ -23,6 +23,9 @@ All main experiments are implemented as Jupyter notebooks under
 [`src/`](src/).
 
 ---
+<p align="left">
+  <img src="images/visual_plots.png" alt="Visualization of Raw IQ Data" width="700">
+</p>
 
 ## Repository layout
 
