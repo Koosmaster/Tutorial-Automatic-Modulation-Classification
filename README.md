@@ -1,4 +1,9 @@
 # Tutorial–Automatic–Modulation–Classification
+<p align="center">
+  <img src="images/snr_curves_2016.png" alt="Accuracy vs SNR for all models" width="700">
+</p>
+
+# Tutorial–Automatic–Modulation–Classification
 
 This project presents the development and evaluation of machine learning models
 for identification of radio–frequency (RF) signals, with a focus on  
