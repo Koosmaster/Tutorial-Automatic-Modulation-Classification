@@ -1,0 +1,7 @@
+model,family,test_accuracy_2016_70_15_15
+kNN,traditional,35.9515
+SVM,traditional,66.5970
+RF,traditional,66.8727
+1D CNN,deep,61.7030
+RNN,deep,55.3909
+Hybrid,deep,62.0515
