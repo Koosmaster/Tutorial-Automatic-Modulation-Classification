@@ -64,27 +64,3 @@ To reproduce the experiments:
 Each notebook calls out the expected dataset path near the top.
 
 ---
-
-## How to use the notebooks
-
-### Option 1: Google Colab (recommended)
-
-1. Open the repository in GitHub and copy the URL.
-2. In Google Colab: **File → Open Notebook → GitHub** and paste the URL.
-3. Open the notebook you want (for example:
-   - traditional baselines,
-   - 1D CNN ablations,
-   - RNN ablations,
-   - hybrid & final comparison).
-4. Follow the instructions at the top of each notebook:
-   - Mount your Google Drive (for dataset & checkpoints),
-   - Set the dataset path,
-   - Run the cells top to bottom.
-
-### Option 2: Local Jupyter environment
-
-1. Clone the repo:
-
-   ```bash
-   git clone https://github.com/Koosmaster/Tutorial-Automatic-Modulation-Classification.git
-   cd Tutorial-Automatic-Modulation-Classification
