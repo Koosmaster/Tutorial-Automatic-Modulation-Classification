@@ -20,7 +20,13 @@ The repo is organized as a **walk-through tutorial**:
 
 All main experiments are implemented as Jupyter notebooks under
 [`notebooks/`](notebooks/); code-only variants and utilities live under
-[`src/`](src/). If you want to reproduce the code it is stored under [`notebooks/repro_scripts`](notebooks/repro_scripts). BE CAREFUL as they are intensive runs!
+[`src/`](src/). If you want to reproduce the code it is stored under [`notebooks/repro_scripts`](notebooks/repro_scripts). 
+
+> ⚠️ **Compute-Intensive Warning (Google Colab) for repro_scripts**
+>
+> Several of these notebooks and scripts are **very demanding** in terms of compute and memory.  
+> When running on **Google Colab**, use a GPU runtime and expect long execution times when certain Boolean flags are enabled; on the free tier you may hit timeouts or resource limits. Proceed with caution before kicking off full training runs.
+
 
 ---
 <p align="left">
