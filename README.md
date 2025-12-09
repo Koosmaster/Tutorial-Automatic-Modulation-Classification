@@ -20,7 +20,7 @@ The repo is organized as a **walk-through tutorial**:
 
 All main experiments are implemented as Jupyter notebooks under
 [`notebooks/`](notebooks/); code-only variants and utilities live under
-[`src/`](src/).
+[`src/`](src/). If you want to reproduce the code it is stored under [`notebooks/reposcripts`](notebooks/reposcripts). BE CAREFUL as they are intensive runs!
 
 ---
 <p align="left">
